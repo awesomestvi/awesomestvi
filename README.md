@@ -4,10 +4,9 @@
 
 <p align="center">
   <a href="https://github.com/awesomestvi?tab=repositories">Repositories</a> ·
-  <a href="https://github.com/awesomestvi/navet">Building Navet</a> ·
   <a href="assets/dashboard.png">Still image</a>
 </p>
 
-I'm **Vishal Chauhan**, a frontend developer and UI/UX designer. I build [Navet](https://github.com/awesomestvi/navet), a smart-home dashboard.
+I'm **Vishal Chauhan**, a frontend developer and UI/UX designer. I build [Navet](https://navet.app/), a local-first smart-home dashboard.
 
 **TypeScript · React · CSS · UI/UX**

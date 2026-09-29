@@ -23,7 +23,7 @@ for day in DAYS:
 W, H = 1000, 620
 CARD, LINE = '#18181b', '#333338'
 WHITE, MUTED, ORANGE, AMBER = '#fafafa', '#b7b7bd', '#f97316', '#ffbd7a'
-PALETTE = ['#262b40', '#4d3026', '#8a4728', '#c5652b', ORANGE]
+PALETTE = ['#29292f', '#4d3026', '#8a4728', '#c5652b', ORANGE]
 
 
 def font(size, bold=False, mono=False):
@@ -58,7 +58,7 @@ def render(phase):
         txt(x-width, y, value, size, color)
 
     def card(box):
-        d.rounded_rectangle(box, 28, fill=CARD, outline=LINE, width=1)
+        d.rounded_rectangle(box, 24, fill=CARD, outline=LINE, width=1)
 
     stats = [(COLLECTION['totalCommitContributions'], 'Commits', ORANGE),
              (COLLECTION['totalPullRequestContributions'], 'Pull requests', WHITE),
@@ -67,13 +67,12 @@ def render(phase):
     for j, (value, label, color) in enumerate(stats):
         x = j*254
         card((x, 0, x+237, 133))
-        txt(x+20, 16, label, 17, bold=True)
-        txt(x+20, 40, 'Past year', 16, MUTED)
-        txt(x+20, 67, f'{value:,}'+(' days' if j == 3 else ''), 36, color, True)
+        txt(x+20, 23, label, 17, bold=True)
+        txt(x+20, 65, f'{value:,}'+(' days' if j == 3 else ''), 36, color, True)
 
     card((0, 150, W-1, 394))
     txt(22, 168, 'Contributions', 20, bold=True)
-    right(976, 174, f"{CAL['totalContributions']:,} contributions · past year", color=ORANGE)
+    right(976, 174, f"{CAL['totalContributions']:,} total · past year", color=ORANGE)
     gx, gy, step, size, row_step = 24, 238, 952/len(WEEKS), 13, 17
     last_month = None
     for wi, week in enumerate(WEEKS):
@@ -90,20 +89,21 @@ def render(phase):
              for wi in range(max(0, len(WEEKS)-27), len(WEEKS))
              for row in (range(7) if wi%2 == 0 else range(6, -1, -1))
              if any(day['weekday'] == row for day in WEEKS[wi]['contributionDays'])]
-    head = phase*(len(trail)-1)
-    for offset in range(14, 0, -1):
-        idx = head-offset
-        if idx < 0:
-            continue
-        i = min(len(trail)-2, int(idx)); t = idx-i
+    if phase is not None and len(trail) > 1:
+        head = phase*(len(trail)-1)
+        for offset in range(14, 0, -1):
+            idx = head-offset
+            if idx < 0:
+                continue
+            i = min(len(trail)-2, int(idx)); t = idx-i
+            x = trail[i][0]*(1-t)+trail[i+1][0]*t
+            y = trail[i][1]*(1-t)+trail[i+1][1]*t
+            color = '#8a5334' if offset > 8 else '#e29b63' if offset > 3 else AMBER
+            d.ellipse((x-2, y-2, x+2, y+2), fill=color)
+        i = min(len(trail)-2, int(head)); t = head-i
         x = trail[i][0]*(1-t)+trail[i+1][0]*t
         y = trail[i][1]*(1-t)+trail[i+1][1]*t
-        color = '#8a5334' if offset > 8 else '#e29b63' if offset > 3 else AMBER
-        d.ellipse((x-2, y-2, x+2, y+2), fill=color)
-    i = min(len(trail)-2, int(head)); t = head-i
-    x = trail[i][0]*(1-t)+trail[i+1][0]*t
-    y = trail[i][1]*(1-t)+trail[i+1][1]*t
-    d.ellipse((x-4, y-4, x+4, y+4), fill=WHITE)
+        d.ellipse((x-4, y-4, x+4, y+4), fill=WHITE)
     txt(24, 363, f"{DAYS[0]['date']} — {DAYS[-1]['date']}", 15, MUTED)
     txt(778, 363, 'Less', 15, MUTED)
     for j, color in enumerate(PALETTE):
@@ -112,18 +112,19 @@ def render(phase):
 
     card((0, 411, 579, H-1))
     txt(22, 429, 'Weekly activity', 20, bold=True)
-    right(556, 435, 'Per week')
+    right(556, 435, 'Contributions')
     vals = [sum(day['contributionCount'] for day in week['contributionDays']) for week in WEEKS]
     maximum = max(vals) or 1
     points = [(24+i*530/(len(vals)-1), 568-v/maximum*85) for i, v in enumerate(vals)]
     d.polygon(points+[(points[-1][0], 570), (24, 570)], fill='#3d2b26')
     d.line(points, fill=ORANGE, width=3)
-    idx = phase*(len(points)-1)
-    lo = min(len(points)-2, int(idx)); t = idx-lo
-    x = points[lo][0]*(1-t)+points[lo+1][0]*t
-    y = points[lo][1]*(1-t)+points[lo+1][1]*t
-    d.ellipse((x-7, y-7, x+7, y+7), outline='#9c5b31', width=2)
-    d.ellipse((x-3, y-3, x+3, y+3), fill=WHITE)
+    if phase is not None:
+        idx = phase*(len(points)-1)
+        lo = min(len(points)-2, int(idx)); t = idx-lo
+        x = points[lo][0]*(1-t)+points[lo+1][0]*t
+        y = points[lo][1]*(1-t)+points[lo+1][1]*t
+        d.ellipse((x-7, y-7, x+7, y+7), outline='#9c5b31', width=2)
+        d.ellipse((x-3, y-3, x+3, y+3), fill=WHITE)
     txt(24, 587, f"Updated {DATA['updatedAt'][:10]}", 15, MUTED)
 
     card((596, 411, W-1, H-1))
@@ -153,10 +154,12 @@ def gif_frame(frame, palette):
 
 
 if __name__ == '__main__':
-    still = render(.68)
+    still = render(None)
     still.save(ROOT/'assets/dashboard.png', optimize=True)
-    palette = still.convert('RGB').quantize(colors=192)
-    frames = [gif_frame(render(i/80), palette) for i in range(80)]
+    palette = render(.68).convert('RGB').quantize(colors=192)
+    # Ease back to the start so the loop has no abrupt end-to-start jump.
+    frames = [gif_frame(render(.5-.5*math.cos(2*math.pi*i/80)), palette)
+              for i in range(80)]
     frames[0].save(ROOT/'assets/dashboard.gif', save_all=True,
                    append_images=frames[1:], duration=80, loop=0,
                    optimize=False, transparency=255, disposal=1)
