@@ -1,0 +1,39 @@
+name: Refresh profile dashboard
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 6 * * *'
+permissions:
+  contents: write
+concurrency:
+  group: profile-refresh
+  cancel-in-progress: false
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --ignore-scripts
+      - run: python -m pip install -r requirements.txt
+      - name: Read GitHub activity
+        run: python scripts/update_profile.py
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - run: npm run build:components
+      - name: Render animation and still image
+        run: python scripts/render_dashboard.py
+      - name: Commit updated visuals
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/profile.json data/components.json assets/dashboard.gif assets/dashboard.png
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: refresh GitHub activity dashboard"
+            git push
+          fi
