@@ -73,7 +73,6 @@ def render(phase):
     gx, gy, step, size = 58, 448, 20.3, 15
     last_month=None
     # Same week/day placement as GitHub. Future cells are left empty.
-    sweep=phase*(len(WEEKS)+9)-4
     for wi,week in enumerate(WEEKS):
         first=date.fromisoformat(week['contributionDays'][0]['date'])
         if first.month != last_month and wi < len(WEEKS)-2 and not (wi == 0 and first.day > 21):
@@ -83,9 +82,6 @@ def render(phase):
             x,y=gx+wi*step,gy+day['weekday']*17
             count=day['contributionCount']
             d.rounded_rectangle((x,y,x+size,y+13),3,fill=PALETTE[level(count)])
-            # Moving outlines never alter the actual heatmap intensity.
-            if abs(wi-sweep)<1.5:
-                d.rounded_rectangle((x-1,y-1,x+size+1,y+14),4,outline='#fff1dd' if count else '#665244',width=1)
     # A lilac comet snakes through the recent six months of the actual grid.
     trail = [(gx+wi*step+size/2, gy+row*17+6.5)
              for wi in range(max(0,len(WEEKS)-27),len(WEEKS))

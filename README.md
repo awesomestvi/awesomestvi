@@ -15,7 +15,7 @@ I'm **Vishal Chauhan**, a frontend developer and UI/UX designer. I build [Navet]
 
 The heatmap and statistics come from GitHub's API. Activity covers GitHub's trailing-year contribution window; longest streak counts consecutive days with contributions in that window. Language percentages use GitHub-reported bytes across public, owned repositories, excluding forks. Stars are summed across those same repositories.
 
-The animated comet, scan, and chart trace are visual effects. The underlying contribution values stay fixed. The footer shows the snapshot date. A daily GitHub Action refreshes the data and images; scheduled runs can be delayed by GitHub. Use the **Still image** link above for a motion-free view.
+The animated comet and chart trace are visual effects. The underlying contribution values stay fixed. The footer shows the snapshot date. A daily GitHub Action refreshes the data and images; scheduled runs can be delayed by GitHub. Use the **Still image** link above for a motion-free view.
 
 The repository includes an interactive preview with a motion pause button and reduced-motion support:
 
