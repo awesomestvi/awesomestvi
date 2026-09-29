@@ -1,7 +1,0 @@
-{
-  "name": "awesomestvi-profile",
-  "private": true,
-  "scripts": {"build:components": "node scripts/render_components.cjs"},
-  "dependencies": {"react": "19.2.8", "react-dom": "19.2.8"},
-  "devDependencies": {"typescript": "6.0.3"}
-}
