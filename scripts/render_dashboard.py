@@ -21,8 +21,8 @@ for day in DAYS:
     RUN = RUN + 1 if day['contributionCount'] else 0
     STREAK = max(STREAK, RUN)
 W, H = 1000, 620
-CARD, LINE = '#151517', '#343436'
-WHITE, MUTED, ORANGE, AMBER = '#fafafa', '#c4c4cc', '#f97316', '#ffbd7a'
+CARD, LINE = '#18181b', '#333338'
+WHITE, MUTED, ORANGE, AMBER = '#fafafa', '#b7b7bd', '#f97316', '#ffbd7a'
 PALETTE = ['#262b40', '#4d3026', '#8a4728', '#c5652b', ORANGE]
 
 
@@ -35,11 +35,11 @@ def font(size, bold=False, mono=False):
         if path and Path(path).exists():
             loaded = ImageFont.truetype(path, size, index=(0 if bold else 7) if 'Avenir' in path else 0)
             if 'inter.ttf' in path:
-                loaded.set_variation_by_axes([700 if bold else 400])
+                loaded.set_variation_by_axes([700 if bold and size == 36 else 600 if bold else 400])
             return loaded
     return ImageFont.load_default(size=size)
 
-FONTS = {(s, b, m): font(s,b,m) for s in [17,18,20,22,24,26,44] for b in [False,True] for m in [False,True]}
+FONTS = {(s, b, m): font(s,b,m) for s in [15,16,17,18,20,36] for b in [False,True] for m in [False,True]}
 
 
 def level(count):
@@ -50,15 +50,15 @@ def render(phase):
     im = Image.new('RGBA', (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
 
-    def txt(x, y, value, size=20, color=WHITE, bold=False):
+    def txt(x, y, value, size=17, color=WHITE, bold=False):
         d.text((x, y), str(value), font=FONTS[size, bold, False], fill=color)
 
-    def right(x, y, value, size=18, color=MUTED):
+    def right(x, y, value, size=16, color=MUTED):
         width = d.textlength(str(value), font=FONTS[size, False, False])
         txt(x-width, y, value, size, color)
 
     def card(box):
-        d.rounded_rectangle(box, 22, fill=CARD, outline=LINE, width=1)
+        d.rounded_rectangle(box, 28, fill=CARD, outline=LINE, width=1)
 
     stats = [(COLLECTION['totalCommitContributions'], 'Commits', ORANGE),
              (COLLECTION['totalPullRequestContributions'], 'Pull requests', WHITE),
@@ -67,19 +67,19 @@ def render(phase):
     for j, (value, label, color) in enumerate(stats):
         x = j*254
         card((x, 0, x+237, 133))
-        txt(x+20, 16, label, 22, bold=True)
-        txt(x+20, 47, 'Past year', 18, MUTED)
-        txt(x+20, 74, f'{value:,}'+(' days' if j == 3 else ''), 44, color, True)
+        txt(x+20, 16, label, 17, bold=True)
+        txt(x+20, 40, 'Past year', 16, MUTED)
+        txt(x+20, 67, f'{value:,}'+(' days' if j == 3 else ''), 36, color, True)
 
     card((0, 150, W-1, 394))
-    txt(22, 168, 'Contributions', 26, bold=True)
+    txt(22, 168, 'Contributions', 20, bold=True)
     right(976, 174, f"{CAL['totalContributions']:,} contributions · past year", color=ORANGE)
     gx, gy, step, size, row_step = 24, 238, 952/len(WEEKS), 13, 17
     last_month = None
     for wi, week in enumerate(WEEKS):
         first = date.fromisoformat(week['contributionDays'][0]['date'])
         if first.month != last_month and wi < len(WEEKS)-2 and not (wi == 0 and first.day > 21):
-            txt(gx+wi*step, 210, first.strftime('%b'), 17, MUTED)
+            txt(gx+wi*step, 210, first.strftime('%b'), 15, MUTED)
             last_month = first.month
         for day in week['contributionDays']:
             x, y = gx+wi*step, gy+day['weekday']*row_step
@@ -104,14 +104,14 @@ def render(phase):
     x = trail[i][0]*(1-t)+trail[i+1][0]*t
     y = trail[i][1]*(1-t)+trail[i+1][1]*t
     d.ellipse((x-4, y-4, x+4, y+4), fill=WHITE)
-    txt(24, 363, f"{DAYS[0]['date']} — {DAYS[-1]['date']}", 17, MUTED)
-    txt(778, 363, 'Less', 17, MUTED)
+    txt(24, 363, f"{DAYS[0]['date']} — {DAYS[-1]['date']}", 15, MUTED)
+    txt(778, 363, 'Less', 15, MUTED)
     for j, color in enumerate(PALETTE):
         d.rounded_rectangle((824+j*20, 366, 838+j*20, 380), 2, fill=color)
-    txt(930, 363, 'More', 17, MUTED)
+    txt(930, 363, 'More', 15, MUTED)
 
     card((0, 411, 579, H-1))
-    txt(22, 429, 'Weekly activity', 26, bold=True)
+    txt(22, 429, 'Weekly activity', 20, bold=True)
     right(556, 435, 'Per week')
     vals = [sum(day['contributionCount'] for day in week['contributionDays']) for week in WEEKS]
     maximum = max(vals) or 1
@@ -124,10 +124,10 @@ def render(phase):
     y = points[lo][1]*(1-t)+points[lo+1][1]*t
     d.ellipse((x-7, y-7, x+7, y+7), outline='#9c5b31', width=2)
     d.ellipse((x-3, y-3, x+3, y+3), fill=WHITE)
-    txt(24, 587, f"Updated {DATA['updatedAt'][:10]}", 17, MUTED)
+    txt(24, 587, f"Updated {DATA['updatedAt'][:10]}", 15, MUTED)
 
     card((596, 411, W-1, H-1))
-    txt(618, 429, 'Languages', 26, bold=True)
+    txt(618, 429, 'Languages', 20, bold=True)
     total = sum(lang['bytes'] for lang in DATA['languages']) or 1
     colors = [ORANGE, AMBER, '#f5ba7e']
     x = 620
@@ -138,9 +138,9 @@ def render(phase):
     for j, lang in enumerate(DATA['languages'][:3]):
         y = 505+j*27
         d.ellipse((620, y+8, 627, y+15), fill=colors[j])
-        txt(638, y, lang['name'], 20)
-        right(976, y, f"{lang['bytes']/total:.0%}", 20)
-    txt(620, 590, 'Public repos · excluding forks', 17, MUTED)
+        txt(638, y, lang['name'], 17)
+        right(976, y, f"{lang['bytes']/total:.0%}", 17)
+    txt(620, 590, 'Public repos · excluding forks', 15, MUTED)
     return im
 
 
